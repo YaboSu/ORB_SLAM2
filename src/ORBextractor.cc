@@ -432,10 +432,10 @@ ORBextractor::ORBextractor(int _nfeatures, float _scaleFactor, int _nlevels,
 
     mvImagePyramid.resize(nlevels);
 
+    // 等比数列计算每level特征个数
     mnFeaturesPerLevel.resize(nlevels);
     float factor = 1.0f / scaleFactor;
     float nDesiredFeaturesPerScale = nfeatures*(1 - factor)/(1 - (float)pow((double)factor, (double)nlevels));
-
     int sumFeatures = 0;
     for( int level = 0; level < nlevels-1; level++ )
     {
@@ -539,6 +539,7 @@ void ExtractorNode::DivideNode(ExtractorNode &n1, ExtractorNode &n2, ExtractorNo
 vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>& vToDistributeKeys, const int &minX,
                                        const int &maxX, const int &minY, const int &maxY, const int &N, const int &level)
 {
+    // 根据宽长比确定有几个四叉树根结点
     // Compute how many initial nodes   
     const int nIni = round(static_cast<float>(maxX-minX)/(maxY-minY));
 
@@ -605,14 +606,11 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
 
         while(lit!=lNodes.end())
         {
-            if(lit->bNoMore)
-            {
+            if(lit->bNoMore) {
                 // If node only contains one point do not subdivide and continue
                 lit++;
                 continue;
-            }
-            else
-            {
+            } else {
                 // If more than one point, subdivide
                 ExtractorNode n1,n2,n3,n4;
                 lit->DivideNode(n1,n2,n3,n4);
@@ -780,7 +778,8 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
 
         const float width = (maxBorderX-minBorderX);
         const float height = (maxBorderY-minBorderY);
-
+        
+        // grid: 30x30
         const int nCols = width/W;
         const int nRows = height/W;
         const int wCell = ceil(width/nCols);
@@ -1118,7 +1117,8 @@ void ORBextractor::ComputePyramid(cv::Mat image)
         if( level != 0 )
         {
             resize(mvImagePyramid[level-1], mvImagePyramid[level], sz, 0, 0, INTER_LINEAR);
-
+            
+            // 当前没有用到
             copyMakeBorder(mvImagePyramid[level], temp, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD, EDGE_THRESHOLD,
                            BORDER_REFLECT_101+BORDER_ISOLATED);            
         }
