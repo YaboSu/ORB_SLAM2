@@ -55,8 +55,7 @@ void LocalMapping::Run()
         SetAcceptKeyFrames(false);
 
         // Check if there are keyframes in the queue
-        if(CheckNewKeyFrames())
-        {
+        if(CheckNewKeyFrames()) {
             // BoW conversion and insertion in Map
             ProcessNewKeyFrame();
 
@@ -85,9 +84,7 @@ void LocalMapping::Run()
             }
 
             mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
-        }
-        else if(Stop())
-        {
+        } else if(Stop()) {
             // Safe area to stop
             while(isStopped() && !CheckFinish())
             {
@@ -183,21 +180,15 @@ void LocalMapping::MapPointCulling()
     while(lit!=mlpRecentAddedMapPoints.end())
     {
         MapPoint* pMP = *lit;
-        if(pMP->isBad())
-        {
+        if(pMP->isBad()) {
             lit = mlpRecentAddedMapPoints.erase(lit);
-        }
-        else if(pMP->GetFoundRatio()<0.25f )
-        {
+        } else if(pMP->GetFoundRatio()<0.25f ) {
             pMP->SetBadFlag();
             lit = mlpRecentAddedMapPoints.erase(lit);
-        }
-        else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && pMP->Observations()<=cnThObs)
-        {
+        } else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=2 && pMP->Observations()<=cnThObs) {
             pMP->SetBadFlag();
             lit = mlpRecentAddedMapPoints.erase(lit);
-        }
-        else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=3)
+        } else if(((int)nCurrentKFid-(int)pMP->mnFirstKFid)>=3)
             lit = mlpRecentAddedMapPoints.erase(lit);
         else
             lit++;

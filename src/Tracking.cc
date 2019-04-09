@@ -273,8 +273,7 @@ void Tracking::Track()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
 
-    if(mState==NOT_INITIALIZED)
-    {
+    if(mState==NOT_INITIALIZED) {
         if(mSensor==System::STEREO || mSensor==System::RGBD)
             StereoInitialization();
         else
@@ -284,41 +283,30 @@ void Tracking::Track()
 
         if(mState!=OK)
             return;
-    }
-    else
-    {
+    } else {
         // System is initialized. Track Frame.
         bool bOK;
 
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
-        if(!mbOnlyTracking)
-        {
+        if(!mbOnlyTracking) {
             // Local Mapping is activated. This is the normal behaviour, unless
             // you explicitly activate the "only tracking" mode.
 
-            if(mState==OK)
-            {
+            if(mState==OK) {
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
-                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
-                {
+                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2) {
                     bOK = TrackReferenceKeyFrame();
-                }
-                else
-                {
+                } else {
                     bOK = TrackWithMotionModel();
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
                 }
-            }
-            else
-            {
+            } else {
                 bOK = Relocalization();
             }
-        }
-        else
-        {
+        } else {
             // Localization Mode: Local Mapping is deactivated
 
             if(mState==LOST)
@@ -392,13 +380,10 @@ void Tracking::Track()
         mCurrentFrame.mpReferenceKF = mpReferenceKF;
 
         // If we have an initial estimation of the camera pose and matching. Track the local map.
-        if(!mbOnlyTracking)
-        {
+        if(!mbOnlyTracking) {
             if(bOK)
                 bOK = TrackLocalMap();
-        }
-        else
-        {
+        } else {
             // mbVO true means that there are few matches to MapPoints in the map. We cannot retrieve
             // a local map and therefore we do not perform TrackLocalMap(). Once the system relocalizes
             // the camera we will use the local map again.
@@ -418,14 +403,12 @@ void Tracking::Track()
         if(bOK)
         {
             // Update motion model
-            if(!mLastFrame.mTcw.empty())
-            {
+            if(!mLastFrame.mTcw.empty()) {
                 cv::Mat LastTwc = cv::Mat::eye(4,4,CV_32F);
                 mLastFrame.GetRotationInverse().copyTo(LastTwc.rowRange(0,3).colRange(0,3));
                 mLastFrame.GetCameraCenter().copyTo(LastTwc.rowRange(0,3).col(3));
                 mVelocity = mCurrentFrame.mTcw*LastTwc;
-            }
-            else
+            } else
                 mVelocity = cv::Mat();
 
             mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.mTcw);
@@ -466,8 +449,7 @@ void Tracking::Track()
         }
 
         // Reset if the camera get lost soon after initialization
-        if(mState==LOST)
-        {
+        if(mState==LOST) {
             if(mpMap->KeyFramesInMap()<=5)
             {
                 cout << "Track lost soon after initialisation, reseting..." << endl;
@@ -483,16 +465,13 @@ void Tracking::Track()
     }
 
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
-    if(!mCurrentFrame.mTcw.empty())
-    {
+    if(!mCurrentFrame.mTcw.empty()) {
         cv::Mat Tcr = mCurrentFrame.mTcw*mCurrentFrame.mpReferenceKF->GetPoseInverse();
         mlRelativeFramePoses.push_back(Tcr);
         mlpReferences.push_back(mpReferenceKF);
         mlFrameTimes.push_back(mCurrentFrame.mTimeStamp);
         mlbLost.push_back(mState==LOST);
-    }
-    else
-    {
+    } else {
         // This can happen if tracking is lost
         mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
         mlpReferences.push_back(mlpReferences.back());
@@ -560,11 +539,9 @@ void Tracking::StereoInitialization()
 void Tracking::MonocularInitialization()
 {
 
-    if(!mpInitializer)
-    {
+    if(!mpInitializer) {
         // Set Reference Frame
-        if(mCurrentFrame.mvKeys.size()>100)
-        {
+        if(mCurrentFrame.mvKeys.size()>100) {
             mInitialFrame = Frame(mCurrentFrame);
             mLastFrame = Frame(mCurrentFrame);
             mvbPrevMatched.resize(mCurrentFrame.mvKeysUn.size());
@@ -580,12 +557,9 @@ void Tracking::MonocularInitialization()
 
             return;
         }
-    }
-    else
-    {
+    } else {
         // Try to initialize
-        if((int)mCurrentFrame.mvKeys.size()<=100)
-        {
+        if((int)mCurrentFrame.mvKeys.size()<=100) {
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
             fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
@@ -597,8 +571,7 @@ void Tracking::MonocularInitialization()
         int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
 
         // Check if there are enough correspondences
-        if(nmatches<100)
-        {
+        if(nmatches<100) {
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
             return;

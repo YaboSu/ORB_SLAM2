@@ -550,8 +550,8 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
     vector<ExtractorNode*> vpIniNodes;
     vpIniNodes.resize(nIni);
 
-    for(int i=0; i<nIni; i++)
-    {
+    // 初始化根结点
+    for(int i=0; i<nIni; i++) {
         ExtractorNode ni;
         ni.UL = cv::Point2i(hX*static_cast<float>(i),0);
         ni.UR = cv::Point2i(hX*static_cast<float>(i+1),0);
@@ -564,22 +564,18 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
     }
 
     //Associate points to childs
-    for(size_t i=0;i<vToDistributeKeys.size();i++)
-    {
+    for(size_t i=0;i<vToDistributeKeys.size();i++) {
         const cv::KeyPoint &kp = vToDistributeKeys[i];
         vpIniNodes[kp.pt.x/hX]->vKeys.push_back(kp);
     }
 
     list<ExtractorNode>::iterator lit = lNodes.begin();
 
-    while(lit!=lNodes.end())
-    {
-        if(lit->vKeys.size()==1)
-        {
+    while(lit!=lNodes.end()) {
+        if(lit->vKeys.size()==1) {
             lit->bNoMore=true;
             lit++;
-        }
-        else if(lit->vKeys.empty())
+        } else if(lit->vKeys.empty())
             lit = lNodes.erase(lit);
         else
             lit++;
@@ -618,7 +614,7 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
                 // Add childs if they contain points
                 if(n1.vKeys.size()>0)
                 {
-                    lNodes.push_front(n1);                    
+                    lNodes.push_front(n1);
                     if(n1.vKeys.size()>1)
                     {
                         nToExpand++;
@@ -660,16 +656,13 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
                 lit=lNodes.erase(lit);
                 continue;
             }
-        }       
+        }
 
         // Finish if there are more nodes than required features
         // or all nodes contain just one point
-        if((int)lNodes.size()>=N || (int)lNodes.size()==prevSize)
-        {
+        if((int)lNodes.size()>=N || (int)lNodes.size()==prevSize) {
             bFinish = true;
-        }
-        else if(((int)lNodes.size()+nToExpand*3)>N)
-        {
+        } else if(((int)lNodes.size()+nToExpand*3)>N) {
 
             while(!bFinish)
             {
@@ -739,8 +732,8 @@ vector<cv::KeyPoint> ORBextractor::DistributeOctTree(const vector<cv::KeyPoint>&
     // Retain the best point in each node
     vector<cv::KeyPoint> vResultKeys;
     vResultKeys.reserve(nfeatures);
-    for(list<ExtractorNode>::iterator lit=lNodes.begin(); lit!=lNodes.end(); lit++)
-    {
+    // 每个node中选出一个response最大的keypoint
+    for(list<ExtractorNode>::iterator lit=lNodes.begin(); lit!=lNodes.end(); lit++) {
         vector<cv::KeyPoint> &vNodeKeys = lit->vKeys;
         cv::KeyPoint* pKP = &vNodeKeys[0];
         float maxResponse = pKP->response;
@@ -766,8 +759,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
 
     const float W = 30;
 
-    for (int level = 0; level < nlevels; ++level)
-    {
+    for (int level = 0; level < nlevels; ++level) {
         const int minBorderX = EDGE_THRESHOLD-3;
         const int minBorderY = minBorderX;
         const int maxBorderX = mvImagePyramid[level].cols-EDGE_THRESHOLD+3;
@@ -785,8 +777,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
         const int wCell = ceil(width/nCols);
         const int hCell = ceil(height/nRows);
 
-        for(int i=0; i<nRows; i++)
-        {
+        for(int i=0; i<nRows; i++) {
             const float iniY =minBorderY+i*hCell;
             float maxY = iniY+hCell+6;
 
@@ -795,8 +786,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
             if(maxY>maxBorderY)
                 maxY = maxBorderY;
 
-            for(int j=0; j<nCols; j++)
-            {
+            for(int j=0; j<nCols; j++) {
                 const float iniX =minBorderX+j*wCell;
                 float maxX = iniX+wCell+6;
                 if(iniX>=maxBorderX-6)
