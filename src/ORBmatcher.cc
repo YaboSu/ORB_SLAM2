@@ -456,7 +456,7 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2, vector<cv::Point2f
 
         if(bestDist<=TH_LOW) {
             if(bestDist<(float)bestDist2*mfNNratio) {
-                if(vnMatches21[bestIdx2]>=0) {
+                if(vnMatches21[bestIdx2]>=0) {  // 重复匹配的处理
                     vnMatches12[vnMatches21[bestIdx2]]=-1;
                     nmatches--;
                 }
@@ -1592,39 +1592,30 @@ void ORBmatcher::ComputeThreeMaxima(vector<int>* histo, const int L, int &ind1, 
     int max2=0;
     int max3=0;
 
-    for(int i=0; i<L; i++)
-    {
+    for(int i=0; i<L; i++) {
         const int s = histo[i].size();
-        if(s>max1)
-        {
+        if(s>max1) {
             max3=max2;
             max2=max1;
             max1=s;
             ind3=ind2;
             ind2=ind1;
             ind1=i;
-        }
-        else if(s>max2)
-        {
+        } else if(s>max2) {
             max3=max2;
             max2=s;
             ind3=ind2;
             ind2=i;
-        }
-        else if(s>max3)
-        {
+        } else if(s>max3) {
             max3=s;
             ind3=i;
         }
     }
 
-    if(max2<0.1f*(float)max1)
-    {
+    if(max2<0.1f*(float)max1) {
         ind2=-1;
         ind3=-1;
-    }
-    else if(max3<0.1f*(float)max1)
-    {
+    } else if(max3<0.1f*(float)max1) {
         ind3=-1;
     }
 }
