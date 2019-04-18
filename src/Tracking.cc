@@ -1145,8 +1145,7 @@ void Tracking::SearchLocalPoints()
         }
     }
 
-    if(nToMatch>0)
-    {
+    if(nToMatch>0) {
         ORBmatcher matcher(0.8);
         int th = 1;
         if(mSensor==System::RGBD)
@@ -1203,14 +1202,11 @@ void Tracking::UpdateLocalKeyFrames()
         if(mCurrentFrame.mvpMapPoints[i])
         {
             MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
-            if(!pMP->isBad())
-            {
+            if(!pMP->isBad()) {
                 const map<KeyFrame*,size_t> observations = pMP->GetObservations();
                 for(map<KeyFrame*,size_t>::const_iterator it=observations.begin(), itend=observations.end(); it!=itend; it++)
                     keyframeCounter[it->first]++;
-            }
-            else
-            {
+            } else {
                 mCurrentFrame.mvpMapPoints[i]=NULL;
             }
         }
