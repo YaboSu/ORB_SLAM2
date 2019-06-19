@@ -61,15 +61,12 @@ void LoopClosing::Run()
     while(1)
     {
         // Check if there are keyframes in the queue
-        if(CheckNewKeyFrames())
-        {
+        if(CheckNewKeyFrames()) {
             // Detect loop candidates and check covisibility consistency
-            if(DetectLoop())
-            {
+            if(DetectLoop()) {
                // Compute similarity transformation [sR|t]
                // In the stereo/RGBD case s=1
-               if(ComputeSim3())
-               {
+               if(ComputeSim3()) {
                    // Perform loop fusion and pose graph optimization
                    CorrectLoop();
                }
@@ -111,8 +108,7 @@ bool LoopClosing::DetectLoop()
     }
 
     //If the map contains less than 10 KF or less than 10 KF have passed from last loop detection
-    if(mpCurrentKF->mnId<mLastLoopKFid+10)
-    {
+    if(mpCurrentKF->mnId<mLastLoopKFid+10) {
         mpKeyFrameDB->add(mpCurrentKF);
         mpCurrentKF->SetErase();
         return false;
@@ -124,8 +120,7 @@ bool LoopClosing::DetectLoop()
     const vector<KeyFrame*> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();
     const DBoW2::BowVector &CurrentBowVec = mpCurrentKF->mBowVec;
     float minScore = 1;
-    for(size_t i=0; i<vpConnectedKeyFrames.size(); i++)
-    {
+    for(size_t i=0; i<vpConnectedKeyFrames.size(); i++) {
         KeyFrame* pKF = vpConnectedKeyFrames[i];
         if(pKF->isBad())
             continue;
@@ -166,33 +161,28 @@ bool LoopClosing::DetectLoop()
 
         bool bEnoughConsistent = false;
         bool bConsistentForSomeGroup = false;
-        for(size_t iG=0, iendG=mvConsistentGroups.size(); iG<iendG; iG++)
-        {
+        for(size_t iG=0, iendG=mvConsistentGroups.size(); iG<iendG; iG++) {
             set<KeyFrame*> sPreviousGroup = mvConsistentGroups[iG].first;
 
             bool bConsistent = false;
             for(set<KeyFrame*>::iterator sit=spCandidateGroup.begin(), send=spCandidateGroup.end(); sit!=send;sit++)
             {
-                if(sPreviousGroup.count(*sit))
-                {
+                if(sPreviousGroup.count(*sit)) {
                     bConsistent=true;
                     bConsistentForSomeGroup=true;
                     break;
                 }
             }
 
-            if(bConsistent)
-            {
+            if(bConsistent) {
                 int nPreviousConsistency = mvConsistentGroups[iG].second;
                 int nCurrentConsistency = nPreviousConsistency + 1;
-                if(!vbConsistentGroup[iG])
-                {
+                if(!vbConsistentGroup[iG]) {
                     ConsistentGroup cg = make_pair(spCandidateGroup,nCurrentConsistency);
                     vCurrentConsistentGroups.push_back(cg);
                     vbConsistentGroup[iG]=true; //this avoid to include the same group more than once
                 }
-                if(nCurrentConsistency>=mnCovisibilityConsistencyTh && !bEnoughConsistent)
-                {
+                if(nCurrentConsistency>=mnCovisibilityConsistencyTh && !bEnoughConsistent) {
                     mvpEnoughConsistentCandidates.push_back(pCandidateKF);
                     bEnoughConsistent=true; //this avoid to insert the same candidate more than once
                 }
@@ -214,13 +204,10 @@ bool LoopClosing::DetectLoop()
     // Add Current Keyframe to database
     mpKeyFrameDB->add(mpCurrentKF);
 
-    if(mvpEnoughConsistentCandidates.empty())
-    {
+    if(mvpEnoughConsistentCandidates.empty()) {
         mpCurrentKF->SetErase();
         return false;
-    }
-    else
-    {
+    } else {
         return true;
     }
 
@@ -256,21 +243,17 @@ bool LoopClosing::ComputeSim3()
         // avoid that local mapping erase it while it is being processed in this thread
         pKF->SetNotErase();
 
-        if(pKF->isBad())
-        {
+        if(pKF->isBad()) {
             vbDiscarded[i] = true;
             continue;
         }
 
         int nmatches = matcher.SearchByBoW(mpCurrentKF,pKF,vvpMapPointMatches[i]);
 
-        if(nmatches<20)
-        {
+        if(nmatches<20) {
             vbDiscarded[i] = true;
             continue;
-        }
-        else
-        {
+        } else {
             Sim3Solver* pSolver = new Sim3Solver(mpCurrentKF,pKF,vvpMapPointMatches[i],mbFixScale);
             pSolver->SetRansacParameters(0.99,20,300);
             vpSim3Solvers[i] = pSolver;
@@ -408,23 +391,20 @@ void LoopClosing::CorrectLoop()
     mpLocalMapper->RequestStop();
 
     // If a Global Bundle Adjustment is running, abort it
-    if(isRunningGBA())
-    {
+    if(isRunningGBA()) {
         unique_lock<mutex> lock(mMutexGBA);
         mbStopGBA = true;
 
         mnFullBAIdx++;
 
-        if(mpThreadGBA)
-        {
+        if(mpThreadGBA) {
             mpThreadGBA->detach();
             delete mpThreadGBA;
         }
     }
 
     // Wait until Local Mapping has effectively stopped
-    while(!mpLocalMapper->isStopped())
-    {
+    while(!mpLocalMapper->isStopped()) {
         usleep(1000);
     }
 
